@@ -96,6 +96,70 @@ $$PS = \frac{P}{735.5}$$
 
 ---
 
+## ⚠️ 実機利用時の注意事項
+
+### 📱 インストール方法
+
+1.  端末の **「設定」→「セキュリティ」→「不明なアプリのインストール」** を許可します。
+2.  上記リンクから `gps-dyno-debug.apk` をダウンロードし、端末でファイルをタップしてインストールします。
+3.  「このアプリをインストールしますか？」の確認画面で **「インストール」** を押します。
+
+> **デバッグ版 APK について**  
+> このAPKはデバッグビルドです。Googleが発行した正式な署名鍵では署名されていません。  
+> 実使用では問題ありませんが、Android が「不明な開発元」として警告を表示する場合があります。
+
+---
+
+### 🔒 バックグラウンドロギングに必要な権限設定
+
+バックグラウンドで100ms周期の高頻度ロギングを行うために、以下の設定が必須です。
+
+#### 1. 位置情報を「常に許可」に設定する（最重要）
+
+| 手順 | 操作 |
+|---|---|
+| ① | 「設定」→「アプリ」→「GPS Dyno」→「権限」を開く |
+| ② | 「位置情報」をタップ |
+| ③ | **「常に許可」** を選択する |
+
+> **⚠️ 「アプリの使用中のみ」では画面OFF時にデータが欠落します。**  
+> バックグラウンドロギングには必ず **「常に許可」** を選択してください。
+
+#### 2. 通知の許可（Android 13以降）
+
+Android 13 (API 33) 以降の端末では、アプリ初回起動時に通知の許可ダイアログが表示されます。  
+Foreground Service（バックグラウンドロギング）の動作状態をステータスバーに表示するために **「許可」** を選択してください。
+
+#### 3. バッテリー最適化の除外（推奨）
+
+長時間のロギング中に Android のバッテリー最適化がアプリを強制終了する場合があります。
+
+| 手順 | 操作 |
+|---|---|
+| ① | 「設定」→「アプリ」→「GPS Dyno」→「バッテリー」を開く |
+| ② | **「制限なし」** を選択する |
+
+---
+
+### 📐 精度を高めるための推奨設定
+
+| 項目 | 推奨値 / 操作 |
+|---|---|
+| GPS精度モード | 「高精度」または「デバイスのみ」を推奨。「省電力」は10Hz取得ができない場合があります |
+| スマートフォンの固定 | 車体に強固に固定し、走行中のガタつきを最小限にすること |
+| キャリブレーション | 固定直後の平坦路で必ずメーター画面右上の更新アイコンをタップして0点校正を行う |
+| 設定値の入力 | 車両重量・乗員重量・Cd値・前面投影面積・転がり抵抗係数を正確に入力することで馬力の推定精度が向上します |
+
+---
+
+### 🛡️ プライバシーとデータ取り扱い
+
+*   GPS Dyno は **一切の外部サーバーへの通信を行いません**。
+*   走行データ（位置・速度・馬力）はすべて **端末内のRoom データベースにのみ保存** されます。
+*   データのエクスポートは、ユーザーが明示的に操作した場合のみ、CSV形式でのみ行われます。
+
+---
+
 # GPS Dyno (English)
 
 <p align="center">
@@ -191,6 +255,70 @@ $$PS = \frac{P}{735.5}$$
     Select a logging duration limit and tap "MEASURE START". The system will capture 100ms interval logs even in standby/sleep mode.
 5. **Analyze and Export**:
     Access the "Logs" tab to view interactive charts, or tap the share icon to export data to CSV for spreadsheet analysis on your PC.
+
+---
+
+## ⚠️ Important Notes for Real Device Usage
+
+### 📱 How to Install the APK
+
+1. On your device, go to **Settings → Security → Install Unknown Apps** and allow installations from your browser or file manager.
+2. Download `gps-dyno-debug.apk` from the link above and tap the file on your device.
+3. Tap **"Install"** when prompted.
+
+> **About the Debug APK**  
+> This APK is a debug build and is not signed with an official Google Play release key.  
+> Android may show an "Unknown developer" warning — this is expected and safe to proceed.
+
+---
+
+### 🔒 Required Permission Settings for Background Logging
+
+The following settings are **required** for 100ms high-frequency background logging.
+
+#### 1. Set Location Permission to "Allow all the time" (Critical)
+
+| Step | Action |
+|---|---|
+| ① | Go to Settings → Apps → GPS Dyno → Permissions |
+| ② | Tap "Location" |
+| ③ | Select **"Allow all the time"** |
+
+> **⚠️ "Only while using the app" will cause data loss when the screen turns off.**  
+> You MUST select **"Allow all the time"** for uninterrupted background logging.
+
+#### 2. Allow Notifications (Android 13+)
+
+On Android 13 (API 33) or later, a notification permission dialog will appear on first launch.  
+Tap **"Allow"** to enable the Foreground Service status indicator in the notification bar.
+
+#### 3. Disable Battery Optimization (Recommended)
+
+Android's battery optimization may terminate the app during long logging sessions.
+
+| Step | Action |
+|---|---|
+| ① | Go to Settings → Apps → GPS Dyno → Battery |
+| ② | Select **"Unrestricted"** |
+
+---
+
+### 📐 Tips for Better Accuracy
+
+| Item | Recommendation |
+|---|---|
+| GPS Mode | Use "High accuracy" or "Device only". "Battery saving" mode may not support 10Hz GPS |
+| Device Mounting | Mount your phone firmly to the vehicle to minimize vibration during logging |
+| Calibration | After mounting, tap the Refresh icon (top-right of the speedometer) on flat ground to zero-calibrate |
+| Settings | Enter accurate vehicle weight, rider weight, Cd value, frontal area, and rolling resistance for best horsepower estimation |
+
+---
+
+### 🛡️ Privacy & Data Handling
+
+* GPS Dyno **does not transmit any data to external servers**.
+* All driving data (location, speed, horsepower) is stored **only in the on-device Room database**.
+* Data export only occurs when explicitly triggered by the user, in CSV format only.
 
 ---
 
