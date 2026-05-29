@@ -2,10 +2,9 @@ package com.example.gpsdyno.presentation.ui.screens
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -50,7 +49,7 @@ fun MainScreen(
                     NavigationBarItem(
                         selected = activeTab == AppTab.METER,
                         onClick = { activeTab = AppTab.METER },
-                        icon = { Icon(Icons.Default.Speed, contentDescription = "メーター") },
+                        icon = { Icon(Icons.Default.Build, contentDescription = "メーター") },
                         label = { Text("メーター") },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color.Black,
@@ -63,7 +62,7 @@ fun MainScreen(
                     NavigationBarItem(
                         selected = activeTab == AppTab.LOGS,
                         onClick = { activeTab = AppTab.LOGS },
-                        icon = { Icon(Icons.Default.History, contentDescription = "ログ履歴") },
+                        icon = { Icon(Icons.Default.List, contentDescription = "ログ履歴") },
                         label = { Text("走行ログ") },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color.Black,

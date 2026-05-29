@@ -2,15 +2,16 @@ package com.example.gpsdyno.presentation.ui.screens
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CompassCalibration
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -118,7 +119,7 @@ fun MeterScreen(
                 modifier = Modifier.background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
             ) {
                 Icon(
-                    imageVector = Icons.Default.CompassCalibration,
+                    imageVector = Icons.Default.Refresh,
                     contentDescription = "キャリブレーション",
                     tint = NeonCyan
                 )
@@ -313,7 +314,7 @@ fun MeterScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Icon(
-                        imageVector = if (isLogging) Icons.Default.Stop else Icons.Default.PlayArrow,
+                        imageVector = if (isLogging) Icons.Default.Close else Icons.Default.PlayArrow,
                         contentDescription = if (isLogging) "STOP" else "START",
                         tint = Color.Black
                     )

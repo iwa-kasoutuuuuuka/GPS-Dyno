@@ -176,10 +176,7 @@ fun SettingsInputField(
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = NeonGreen,
-                unfocusedBorderColor = Color.DarkGray,
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White,
-                containerColor = MaterialTheme.colorScheme.surface
+                unfocusedBorderColor = Color.DarkGray
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()

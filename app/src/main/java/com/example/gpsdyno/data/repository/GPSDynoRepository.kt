@@ -21,6 +21,10 @@ class GPSDynoRepository(context: Context) {
     // 全走行セッションのFlow取得（日付降順）
     val allSessions: Flow<List<LogSession>> = logDao.getAllSessions()
 
+    suspend fun getSessionById(sessionId: Long): LogSession? {
+        return logDao.getSessionById(sessionId)
+    }
+
     // キャッシュされた最新設定
     suspend fun getVehicleSettings(): VehicleSettings {
         return logDao.getVehicleSettings() ?: VehicleSettings()

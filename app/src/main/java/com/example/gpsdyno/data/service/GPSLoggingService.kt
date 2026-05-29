@@ -122,7 +122,7 @@ class GPSLoggingService : Service() {
         } else if (action == ACTION_STOP_LOGGING) {
             stopLoggingSession()
         }
-        return START_NOTICKY
+        return START_NOT_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder {
@@ -321,7 +321,7 @@ class GPSLoggingService : Service() {
 
     // --- 通知関連 ---
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES:O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "GPS Dyno Logging",
