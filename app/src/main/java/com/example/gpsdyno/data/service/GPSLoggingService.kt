@@ -125,8 +125,28 @@ class GPSLoggingService : Service() {
         return START_NOT_STICKY
     }
 
+    private var isBound = false
+
     override fun onBind(intent: Intent?): IBinder {
+        isBound = true
+        // メーター画面起動（サービスバインド）と同時にGPSとセンサーによる常時計測を開始
+        startGPSUpdates()
         return binder
+    }
+
+    override fun onRebind(intent: Intent?) {
+        super.onRebind(intent)
+        isBound = true
+        startGPSUpdates()
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        isBound = false
+        // ロギング（保存）中でなければ、画面を閉じた（アンバインド）時点でGPS更新を停止してバッテリー節約
+        if (!_isLogging.value) {
+            stopGPSUpdates()
+        }
+        return true // 次回バインド時にonRebindを呼び出させるためtrueを返す
     }
 
     override fun onDestroy() {
@@ -174,7 +194,7 @@ class GPSLoggingService : Service() {
             // ロギング開始時の自動キャリブレーション（静止状態での0点調整を想定）
             slopeEstimator.calibrate()
 
-            startForeground(NOTIFICATION_ID, buildNotification("測定中...", 0.0, 0))
+            startForeground(NOTIFICATION_ID, buildNotification("走行データ記録中...", 0.0, 0))
             startGPSUpdates()
         }
     }
@@ -184,7 +204,11 @@ class GPSLoggingService : Service() {
 
         serviceScope.launch {
             _isLogging.value = false
-            stopGPSUpdates()
+            
+            // バインドされていない（画面を閉じている）場合は、完全にGPS更新を停止する
+            if (!isBound) {
+                stopGPSUpdates()
+            }
 
             if (wakeLock.isHeld) {
                 wakeLock.release()
@@ -215,7 +239,7 @@ class GPSLoggingService : Service() {
 
             currentSessionId = null
             _elapsedTimeMillis.value = 0L
-            _estimatedHp.value = 0.0
+            // 計測プレビュー自体は継続させるため _estimatedHp.value = 0.0 はクリアしない
             stopForeground(STOP_FOREGROUND_REMOVE)
         }
     }

@@ -102,12 +102,23 @@ fun MeterScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
-                Text(
-                    text = gpsStatusText,
-                    color = gpsStatusColor,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = gpsStatusText,
+                        color = gpsStatusColor,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (!isLogging && accuracy > 0f) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "● 常時計測中 (保存なし)",
+                            color = NeonCyan,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
 
             // キャリブレーション（勾配補正0点調整）ボタン
@@ -295,10 +306,10 @@ fun MeterScreen(
                 onClick = {
                     if (isLogging) {
                         viewModel.stopLogging(context)
-                        Toast.makeText(context, "走行データを保存しました", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "走行ログの記録を保存しました", Toast.LENGTH_SHORT).show()
                     } else {
                         viewModel.startLogging(context, durations[selectedDurationIndex])
-                        Toast.makeText(context, "走行データのロギングを開始しました", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "走行ログの記録を開始しました", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier
@@ -320,7 +331,7 @@ fun MeterScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (isLogging) "MEASURE STOP (手動停止)" else "MEASURE START (測定開始)",
+                        text = if (isLogging) "RECORD STOP (記録停止)" else "RECORD START (走行ログ記録開始)",
                         color = Color.Black,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
