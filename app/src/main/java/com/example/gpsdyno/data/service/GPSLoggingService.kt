@@ -103,8 +103,7 @@ class GPSLoggingService : Service() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "GPSDyno::LoggingWakeLock")
 
-        // センサーの稼働開始
-        slopeEstimator.start()
+        // センサーの稼働開始（onCreateでの常時起動を廃止し、バインド時やロギング時に動的制御）
         createNotificationChannel()
 
         // 最新車両設定の取得・監視
@@ -134,6 +133,7 @@ class GPSLoggingService : Service() {
         isBound = true
         // メーター画面起動（サービスバインド）と同時にGPSとセンサーによる常時計測を開始
         startGPSUpdates()
+        slopeEstimator.start()
         return binder
     }
 
@@ -141,13 +141,15 @@ class GPSLoggingService : Service() {
         super.onRebind(intent)
         isBound = true
         startGPSUpdates()
+        slopeEstimator.start()
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
         isBound = false
-        // ロギング（保存）中でなければ、画面を閉じた（アンバインド）時点でGPS更新を停止してバッテリー節約
+        // ロギング（保存）中でなければ、画面を閉じた（アンバインド）時点でGPS更新とセンサーを停止してバッテリー節約
         if (!_isLogging.value) {
             stopGPSUpdates()
+            slopeEstimator.stop()
         }
         return true // 次回バインド時にonRebindを呼び出させるためtrueを返す
     }
@@ -195,6 +197,7 @@ class GPSLoggingService : Service() {
             _isLogging.value = true
 
             // ロギング開始時の自動キャリブレーション（静止状態での0点調整を想定）
+            slopeEstimator.start() // バックグラウンド動作時の開始を保証
             slopeEstimator.calibrate()
 
             startForeground(NOTIFICATION_ID, buildNotification("走行データ記録中...", 0.0, 0))
@@ -208,9 +211,10 @@ class GPSLoggingService : Service() {
         serviceScope.launch {
             _isLogging.value = false
             
-            // バインドされていない（画面を閉じている）場合は、完全にGPS更新を停止する
+            // バインドされていない（画面を閉じている）場合は、完全にGPS更新とセンサーを停止する
             if (!isBound) {
                 stopGPSUpdates()
+                slopeEstimator.stop()
             }
 
             if (wakeLock.isHeld) {

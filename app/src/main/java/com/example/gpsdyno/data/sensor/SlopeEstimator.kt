@@ -29,17 +29,26 @@ class SlopeEstimator(context: Context) : SensorEventListener {
     var currentSlopeAngleDegrees: Double = 0.0
         private set
 
+    private var isListening = false
+
     fun start() {
+        if (isListening) return
         // 重力センサーを優先使用。無ければ加速度センサーを使用。
         if (gravitySensor != null) {
-            sensorManager.registerListener(this, gravitySensor, SensorManager.SENSOR_DELAY_GAME)
+            if (sensorManager.registerListener(this, gravitySensor, SensorManager.SENSOR_DELAY_GAME)) {
+                isListening = true
+            }
         } else if (accelerometer != null) {
-            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME)
+            if (sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME)) {
+                isListening = true
+            }
         }
     }
 
     fun stop() {
+        if (!isListening) return
         sensorManager.unregisterListener(this)
+        isListening = false
     }
 
     /**

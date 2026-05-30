@@ -48,6 +48,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // バックグラウンド位置情報要求用ランチャー (動的生成によるクラッシュを防ぐため初期化時に配置)
+    private val backgroundLocationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            Toast.makeText(this, "バックグラウンド位置情報の使用が拒否されました。スリープ中のロギングが制限される場合があります。", Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -125,8 +134,8 @@ class MainActivity : ComponentActivity() {
                     Toast.LENGTH_LONG
                 ).show()
 
-                // バックグラウンド位置情報の直接要求
-                registerForActivityResult(ActivityResultContracts.RequestPermission()) {}.launch(
+                // 事前に定義したメンバ変数のランチャーを使用して安全に要求
+                backgroundLocationPermissionLauncher.launch(
                     Manifest.permission.ACCESS_BACKGROUND_LOCATION
                 )
             }
