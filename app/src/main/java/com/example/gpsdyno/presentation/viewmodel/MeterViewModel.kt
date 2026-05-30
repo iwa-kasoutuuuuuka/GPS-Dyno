@@ -37,6 +37,9 @@ class MeterViewModel : ViewModel() {
     private val _estimatedHp = MutableStateFlow(0.0)
     val estimatedHp: StateFlow<Double> = _estimatedHp.asStateFlow()
 
+    private val _currentAccelerationG = MutableStateFlow(0.0)
+    val currentAccelerationG: StateFlow<Double> = _currentAccelerationG.asStateFlow()
+
     private val _isLogging = MutableStateFlow(false)
     val isLogging: StateFlow<Boolean> = _isLogging.asStateFlow()
 
@@ -60,6 +63,7 @@ class MeterViewModel : ViewModel() {
                 launch { boundService.maxSpeedKmh.collect { _maxSpeedKmh.value = it } }
                 launch { boundService.gpsAccuracy.collect { _gpsAccuracy.value = it } }
                 launch { boundService.estimatedHp.collect { _estimatedHp.value = it } }
+                launch { boundService.currentAccelerationG.collect { _currentAccelerationG.value = it } }
                 launch { boundService.isLogging.collect { _isLogging.value = it } }
                 launch { boundService.elapsedTimeMillis.collect { _elapsedTimeMillis.value = it } }
             }

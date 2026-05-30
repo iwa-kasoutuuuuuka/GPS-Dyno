@@ -31,6 +31,15 @@ import com.example.gpsdyno.presentation.ui.theme.NeonOrange
 import com.example.gpsdyno.presentation.viewmodel.MeterViewModel
 import java.util.Locale
 
+/**
+ * メーター表示のアクティブな項目タイプ
+ */
+enum class MeterType(val label: String) {
+    SPEED("速度"),
+    ACCELERATION("加速度"),
+    HORSEPOWER("馬力")
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MeterScreen(
@@ -44,8 +53,12 @@ fun MeterScreen(
     val maxSpeed by viewModel.maxSpeedKmh.collectAsState()
     val accuracy by viewModel.gpsAccuracy.collectAsState()
     val estimatedHp by viewModel.estimatedHp.collectAsState()
+    val currentAccG by viewModel.currentAccelerationG.collectAsState() // リアルタイム加速度
     val isLogging by viewModel.isLogging.collectAsState()
     val elapsedTime by viewModel.elapsedTimeMillis.collectAsState()
+
+    // メーターのメイン表示タイプ
+    var selectedMeterType by remember { mutableStateOf(MeterType.SPEED) }
 
     // 記録制限時間の設定用
     val durations = listOf(1, 3, 5, 10, 30, 60, 180, 300) // 分単位
@@ -137,6 +150,66 @@ fun MeterScreen(
             }
         }
 
+        // --- メイン表示項目の切り替えトグル (速度 / 加速度 / 馬力) ---
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(20.dp))
+                .padding(3.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            MeterType.values().forEach { type ->
+                val isSelected = selectedMeterType == type
+                val activeColor = when (type) {
+                    MeterType.SPEED -> NeonGreen
+                    MeterType.ACCELERATION -> NeonCyan
+                    MeterType.HORSEPOWER -> NeonOrange
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(17.dp))
+                        .background(if (isSelected) activeColor.copy(alpha = 0.15f) else Color.Transparent)
+                        .border(
+                            width = if (isSelected) 1.dp else 0.dp,
+                            color = if (isSelected) activeColor else Color.Transparent,
+                            shape = RoundedCornerShape(17.dp)
+                        )
+                        .clickable { selectedMeterType = type },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = type.label,
+                        color = if (isSelected) activeColor else Color.Gray,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+        }
+
+        // 選択されたタイプに応じた表示値・単位・カラーの決定
+        val (displayValue, unitText, activeColor) = remember(selectedMeterType, speed, currentAccG, estimatedHp) {
+            when (selectedMeterType) {
+                MeterType.SPEED -> Triple(
+                    String.format(Locale.getDefault(), "%.0f", speed),
+                    "km/h",
+                    NeonGreen
+                )
+                MeterType.ACCELERATION -> Triple(
+                    String.format(Locale.getDefault(), "%+.2f", currentAccG),
+                    "G",
+                    NeonCyan
+                )
+                MeterType.HORSEPOWER -> Triple(
+                    String.format(Locale.getDefault(), "%.1f", estimatedHp),
+                    "PS",
+                    NeonOrange
+                )
+            }
+        }
+
         // --- 中央大型スピードメーター ---
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -146,31 +219,31 @@ fun MeterScreen(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .size(240.dp)
-                    .clip(RoundedCornerShape(120.dp))
+                    .size(230.dp)
+                    .clip(RoundedCornerShape(115.dp))
                     .border(
                         width = 4.dp,
                         brush = Brush.sweepGradient(
-                            colors = listOf(NeonGreen, NeonCyan, NeonOrange, NeonGreen)
+                            colors = listOf(activeColor, NeonCyan, activeColor)
                         ),
-                        shape = RoundedCornerShape(120.dp)
+                        shape = RoundedCornerShape(115.dp)
                     )
                     .background(MaterialTheme.colorScheme.surface)
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // 速度値
+                    // 数値表示
                     Text(
-                        text = String.format(Locale.getDefault(), "%.0f", speed),
-                        fontSize = 72.sp,
+                        text = displayValue,
+                        fontSize = if (selectedMeterType == MeterType.ACCELERATION) 56.sp else 68.sp,
                         fontWeight = FontWeight.Black,
                         fontFamily = FontFamily.Monospace,
-                        color = NeonGreen,
+                        color = activeColor,
                         textAlign = TextAlign.Center
                     )
                     // 単位
                     Text(
-                        text = "km/h",
-                        fontSize = 18.sp,
+                        text = unitText,
+                        fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                         fontWeight = FontWeight.Bold
                     )
@@ -218,46 +291,76 @@ fun MeterScreen(
             }
         }
 
-        // --- 中下部 推定ホイール馬力 ---
-        Card(
+        // --- 中下部 推定ホイール馬力およびサブメーターカード ---
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(16.dp),
-            border = BorderStroke(1.dp, NeonOrange.copy(alpha = 0.5f))
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Estimated Wheel Horsepower",
-                    fontSize = 14.sp,
-                    color = NeonOrange,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.Bottom
+            // メイン以外を表示するサブカードを2列で配置
+            val otherTypes = MeterType.values().filter { it != selectedMeterType }
+            otherTypes.forEach { type ->
+                val cardColor = when (type) {
+                    MeterType.SPEED -> NeonGreen
+                    MeterType.ACCELERATION -> NeonCyan
+                    MeterType.HORSEPOWER -> NeonOrange
+                }
+                val title = when (type) {
+                    MeterType.SPEED -> "SPEED"
+                    MeterType.ACCELERATION -> "ACCELERATION"
+                    MeterType.HORSEPOWER -> "HORSEPOWER"
+                }
+                val valueStr = when (type) {
+                    MeterType.SPEED -> String.format(Locale.getDefault(), "%.0f", speed)
+                    MeterType.ACCELERATION -> String.format(Locale.getDefault(), "%+.2f", currentAccG)
+                    MeterType.HORSEPOWER -> String.format(Locale.getDefault(), "%.1f", estimatedHp)
+                }
+                val unitStr = when (type) {
+                    MeterType.SPEED -> "km/h"
+                    MeterType.ACCELERATION -> "G"
+                    MeterType.HORSEPOWER -> "PS"
+                }
+
+                Card(
+                    modifier = Modifier.weight(1f),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, cardColor.copy(alpha = 0.35f))
                 ) {
-                    Text(
-                        text = String.format(Locale.getDefault(), "%.1f", estimatedHp),
-                        fontSize = 44.sp,
-                        fontWeight = FontWeight.Black,
-                        color = NeonOrange,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "PS",
-                        fontSize = 18.sp,
-                        color = NeonOrange,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = title,
+                            fontSize = 10.sp,
+                            color = cardColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            Text(
+                                text = valueStr,
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Black,
+                                color = cardColor,
+                                fontFamily = FontFamily.Monospace
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = unitStr,
+                                fontSize = 11.sp,
+                                color = cardColor,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 2.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

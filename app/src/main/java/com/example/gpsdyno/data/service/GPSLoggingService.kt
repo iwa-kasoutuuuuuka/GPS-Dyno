@@ -64,6 +64,9 @@ class GPSLoggingService : Service() {
     private val _estimatedHp = MutableStateFlow(0.0)
     val estimatedHp: StateFlow<Double> = _estimatedHp.asStateFlow()
 
+    private val _currentAccelerationG = MutableStateFlow(0.0)
+    val currentAccelerationG: StateFlow<Double> = _currentAccelerationG.asStateFlow()
+
     private val _isLogging = MutableStateFlow(false)
     val isLogging: StateFlow<Boolean> = _isLogging.asStateFlow()
 
@@ -298,6 +301,7 @@ class GPSLoggingService : Service() {
         } else {
             0.0
         }
+        _currentAccelerationG.value = acceleration / 9.80665
 
         // 道路勾配推定値の取得（勾配センサー無効設定の場合は常に0.0）
         val slopeAngle = if (vehicleSettings.useSlopeSensor) {
