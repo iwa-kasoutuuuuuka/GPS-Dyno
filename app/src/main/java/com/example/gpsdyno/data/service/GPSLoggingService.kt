@@ -171,6 +171,9 @@ class GPSLoggingService : Service() {
 
             _isLogging.value = true
 
+            // ロギング開始時の自動キャリブレーション（静止状態での0点調整を想定）
+            slopeEstimator.calibrate()
+
             startForeground(NOTIFICATION_ID, buildNotification("測定中...", 0.0, 0))
             startGPSUpdates()
         }
@@ -272,8 +275,12 @@ class GPSLoggingService : Service() {
             0.0
         }
 
-        // 道路勾配推定値の取得
-        val slopeAngle = slopeEstimator.currentSlopeAngleDegrees
+        // 道路勾配推定値の取得（勾配センサー無効設定の場合は常に0.0）
+        val slopeAngle = if (vehicleSettings.useSlopeSensor) {
+            slopeEstimator.currentSlopeAngleDegrees
+        } else {
+            0.0
+        }
 
         // 推定ホイール馬力計算
         val hp = HorsepowerCalculator.calculate(filteredSpeed, acceleration, slopeAngle, vehicleSettings)

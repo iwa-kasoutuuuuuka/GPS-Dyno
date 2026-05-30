@@ -36,6 +36,7 @@ fun SettingsScreen(
     var cdStr by remember { mutableStateOf("") }
     var frontalAreaStr by remember { mutableStateOf("") }
     var rollingResStr by remember { mutableStateOf("") }
+    var useSlopeSensor by remember { mutableStateOf(true) }
 
     // 現在の設定値がロードされたらテキストフィールドを初期化
     LaunchedEffect(currentSettings) {
@@ -44,6 +45,7 @@ fun SettingsScreen(
         cdStr = currentSettings.cd.toString()
         frontalAreaStr = currentSettings.frontalArea.toString()
         rollingResStr = currentSettings.rollingRes.toString()
+        useSlopeSensor = currentSettings.useSlopeSensor
     }
 
     val scrollState = rememberScrollState()
@@ -106,7 +108,42 @@ fun SettingsScreen(
             placeholder = "アスファルト舗装例: 0.015"
         )
 
-        Spacer(modifier = Modifier.height(30.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // --- 勾配センサートグルスイッチ ---
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                Text(
+                    text = "路面勾配センサーを有効にする",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "オフにすると勾配を0(平坦)として計算します。オートバイやマウントの振動が激しい場合はオフを推奨します。",
+                    fontSize = 11.sp,
+                    color = Color.Gray
+                )
+            }
+            Switch(
+                checked = useSlopeSensor,
+                onCheckedChange = { useSlopeSensor = it },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = NeonGreen,
+                    checkedTrackColor = NeonGreen.copy(alpha = 0.4f)
+                )
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
 
         // --- 保存ボタン ---
         Button(
@@ -128,7 +165,8 @@ fun SettingsScreen(
                         frontalArea = fArea,
                         rollingRes = rRes,
                         theme = "Dark",
-                        unit = "km/h"
+                        unit = "km/h",
+                        useSlopeSensor = useSlopeSensor
                     )
                     Toast.makeText(context, "設定を保存しました", Toast.LENGTH_SHORT).show()
                 }

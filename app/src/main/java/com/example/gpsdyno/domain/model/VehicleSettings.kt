@@ -15,9 +15,11 @@ data class VehicleSettings(
     val frontalArea: Double = 0.8,     // 前面投影面積 (m^2)
     val rollingRes: Double = 0.015,    // 転がり抵抗係数 Cr
     val theme: String = "Dark",        // UIテーマ設定 ("Dark" 等)
-    val unit: String = "km/h"          // 速度単位設定 ("km/h" 等)
+    val unit: String = "km/h",         // 速度単位設定 ("km/h" 等)
+    val useSlopeSensor: Boolean = true // 路面勾配センサーの使用有無 (二輪車や高振動時はオフ推奨)
 ) {
     // 総重量 (m) のゲッター
     val totalMass: Double
         get() = vehicleWeight + riderWeight
 }
+

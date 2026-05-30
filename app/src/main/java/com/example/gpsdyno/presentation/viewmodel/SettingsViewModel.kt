@@ -41,7 +41,8 @@ class SettingsViewModel(context: Context) : ViewModel() {
         frontalArea: Double,
         rollingRes: Double,
         theme: String,
-        unit: String
+        unit: String,
+        useSlopeSensor: Boolean
     ) {
         viewModelScope.launch {
             val updated = VehicleSettings(
@@ -51,7 +52,8 @@ class SettingsViewModel(context: Context) : ViewModel() {
                 frontalArea = frontalArea,
                 rollingRes = rollingRes,
                 theme = theme,
-                unit = unit
+                unit = unit,
+                useSlopeSensor = useSlopeSensor
             )
             repository.saveVehicleSettings(updated)
         }
